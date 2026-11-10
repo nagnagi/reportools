@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 128" role="img" aria-label="Reportools">
+  <style>
+    g { stroke: #24292f; }
+    @media (prefers-color-scheme: dark) { g { stroke: #e6edf3; } }
+  </style>
+  <g fill="none" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <!-- icon -->
+    <path d="M62 20H32a10 10 0 0 0-10 10v80a10 10 0 0 0 10 10h44a10 10 0 0 0 10-10V60"/>
+    <path d="M60 54l4-16 30-30a8.49 8.49 0 0 1 12 12L76 50z"/>
+    <path d="M36 72h36M36 88h36M36 104h22"/>
+    <!-- R e p o r t o o -->
+    <path d="M150 100V40h14a15 15 0 0 1 0 30h-14M163 70l17 30"/>
+    <path d="M195 82h36a18 18 0 1 0-4.2 11.6"/>
+    <path d="M247 64v56M247 82a18 18 0 1 0 36 0a18 18 0 1 0-36 0"/>
+    <path d="M297 82a18 18 0 1 0 36 0a18 18 0 1 0-36 0"/>
+    <path d="M349 100V64M349 78a14 14 0 0 1 23.9-9.9"/>
+    <path d="M399 46v42a12 12 0 0 0 12 12h2M389 64h24"/>
+    <path d="M425 82a18 18 0 1 0 36 0a18 18 0 1 0-36 0"/>
+    <path d="M475 82a18 18 0 1 0 36 0a18 18 0 1 0-36 0"/>
+    <!-- underline, drawn by the pencil that stands in for the l -->
+    <path d="M150 120h384"/>
+    <path d="M526 48a8 8 0 0 1 16 0v48l-8 24-8-24zM526 96h16"/>
+    <!-- s -->
+    <path d="M581.5 69.9a9 9 0 0 0-8.5-5.9h-6a9 9 0 0 0 0 18h6a9 9 0 0 1 0 18h-6a9 9 0 0 1-8.5-5.9"/>
+  </g>
+</svg>
