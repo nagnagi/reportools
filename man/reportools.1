@@ -97,6 +97,13 @@ updates only the path list, and requires a
 .I .reportools
 in the new directory.
 .TP
+.BR ok " [\fIshort\fR]"
+Mark a report as finished.
+Same as
+.B modify
+.RI [ short ]
+.BR "\-\-state ok" .
+.TP
 .B export
 Print every field of every report as TSV with a header line.
 .TP
@@ -235,7 +242,7 @@ cd algo1
 rt modify \-\-state submit
 rt modify \-\-state resub
 rt modify \-\-state submit
-rt modify \-\-state ok
+rt ok
 .RE
 .fi
 .PP

@@ -87,6 +87,7 @@ reportools <subcommand> [-<options>] [--<long option>, ...] <arguments>
 | `add [path] [--<列> <値>...]` | 既存のディレクトリをパス一覧に登録する。`.reportools` が無ければ作り、`--short` を省略するとディレクトリ名を `short` にする。 |
 | `remove [short]` | パス一覧から外す。ディレクトリとリモートリポジトリは残す。 |
 | `modify [short] --<列> <値>...` | 項目を更新する。commit はしない。 |
+| `ok [short]` | レポートを完了にする。`modify [short] --state ok` と同じ。 |
 | `export` | 全レポートの全項目を、見出し付きの TSV で標準出力に出す。 |
 | `config <key> [value]` / `config --list` | 設定を取得、設定、一覧表示する。 |
 

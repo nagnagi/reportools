@@ -17,6 +17,7 @@ _reportools() {
     'add:register an existing report directory'
     'remove:forget a report (its files and repository are kept)'
     'modify:update the details or state of a report'
+    'ok:mark a report as finished'
     'export:dump every report as TSV on standard output'
     'config:read or change settings in config.ini'
   )
@@ -54,7 +55,7 @@ _reportools() {
         at)
           _arguments '--help[show usage]' $columns '1:report:_reportools_shorts'
           ;;
-        remove)
+        remove|ok)
           _arguments '--help[show usage]' '1:report:_reportools_shorts'
           ;;
         sync)

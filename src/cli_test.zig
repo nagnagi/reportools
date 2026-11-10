@@ -26,7 +26,7 @@ test "global options print usage and version" {
     defer fx.deinit();
 
     const usage = try exec(fx, &.{"--help"});
-    const subcommands = [_][]const u8{ "list", "at", "get", "sync", "init", "add", "remove", "modify", "export", "config" };
+    const subcommands = [_][]const u8{ "list", "at", "get", "sync", "init", "add", "remove", "modify", "ok", "export", "config" };
     for (subcommands) |name| {
         const line = try std.fmt.allocPrint(fx.ctx.arena, "\n  {s} ", .{name});
         try std.testing.expect(std.mem.find(u8, usage, line) != null);
@@ -116,6 +116,24 @@ test "modify validates values and never changes short" {
     try std.testing.expectError(error.Reported, run(&fx.ctx, &.{ "modify", "a", "--short", "b" }));
     try std.testing.expectError(error.Reported, run(&fx.ctx, &.{ "modify", "a" }));
     try std.testing.expectEqualStrings("draft\n\n", try exec(fx, &.{ "at", "a", "--state", "--deadline" }));
+}
+
+test "ok finishes a report by name or from inside its project" {
+    const fx = try Fixture.init();
+    defer fx.deinit();
+    const named = try makeProject(fx, "named");
+    _ = try makeProject(fx, "other");
+    _ = try exec(fx, &.{ "add", "named", "--state", "submit" });
+    _ = try exec(fx, &.{ "add", "other" });
+
+    _ = try exec(fx, &.{ "ok", "other" });
+    try std.testing.expectEqualStrings("ok\n", try exec(fx, &.{ "at", "other", "--state" }));
+    try std.testing.expectEqualStrings("submit\n", try exec(fx, &.{ "at", "named", "--state" }));
+
+    fx.ctx.cwd = named;
+    _ = try exec(fx, &.{"ok"});
+    try std.testing.expectEqualStrings("ok\n", try exec(fx, &.{ "at", "--state" }));
+    try std.testing.expectError(error.Reported, run(&fx.ctx, &.{ "ok", "missing" }));
 }
 
 test "short may be omitted inside a project" {

@@ -34,6 +34,7 @@ const commands = [_]Command{
     .from("add", @import("commands/add.zig")),
     .from("remove", @import("commands/remove.zig")),
     .from("modify", @import("commands/modify.zig")),
+    .from("ok", @import("commands/ok.zig")),
     .from("export", @import("commands/export.zig")),
     .from("config", @import("commands/config.zig")),
 };
