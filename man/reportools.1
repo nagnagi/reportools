@@ -1,0 +1,253 @@
+.TH REPORTOOLS 1 "2026-11-10" "reportools 0.1.0" "User Commands"
+.SH NAME
+reportools, rt \- initialize and manage report projects
+.SH SYNOPSIS
+.B reportools
+.I subcommand
+.RI [ options ]
+.RI [ arguments ]
+.br
+.B reportools
+.B \-\-help
+|
+.B \-\-version
+|
+.B \-\-env
+.I shell
+.SH DESCRIPTION
+.B reportools
+manages reports, each kept as its own git repository.
+The details of a report are stored in the project's metafile,
+.IR .reportools ,
+and the location of each project is stored in a path list on this machine.
+Repositories are created and cloned with
+.BR gh (1)
+and synchronized with
+.BR git (1).
+.PP
+.B rt
+is short for
+.B reportools
+and becomes available once the output of
+.B \-\-env
+is evaluated by the shell.
+.PP
+Where a subcommand accepts an optional
+.IR short ,
+omitting it selects the project that contains the current directory.
+.SH SUBCOMMANDS
+.TP
+.BR list " [" \-\-\fIcolumn\fR ...]
+Show every report, soonest deadline first.
+With columns, print only those columns, tab-separated and without a header.
+.TP
+.BR at " [\fIshort\fR] [" \-\-\fIcolumn\fR ...]
+Show every field of a report.
+With columns, print only their values, one per line.
+.TP
+.BI get " short"
+Clone
+.IR user / short
+into
+.RI ./ short
+and add it to the path list.
+.TP
+.BR sync " [\fIshort\fR]"
+Run
+.B git pull
+and then
+.BR "git push" .
+Nothing is committed.
+With
+.BR \-\-all ,
+synchronize every report.
+.TP
+.BI init " short"
+Create a project in
+.RI ./ short ,
+commit it and add it to the path list, then create the private repository
+.IR user / short
+and push.
+If
+.B release.title
+is not set,
+.B init
+fails before creating anything.
+.TP
+.BR add " [\fIpath\fR]"
+Add an existing directory to the path list.
+If it has no
+.IR .reportools ,
+one is created from the options; without
+.BR \-\-short ,
+the directory name becomes the short.
+.TP
+.BR remove " [\fIshort\fR]"
+Drop a report from the path list.
+Its directory and remote repository are kept.
+.TP
+.BR modify " [\fIshort\fR] " \-\-\fIcolumn\fR " \fIvalue\fR ..."
+Update fields of a report.
+This rewrites
+.I .reportools
+without committing.
+The short cannot be changed.
+.B \-\-path
+updates only the path list, and requires a
+.I .reportools
+in the new directory.
+.TP
+.B export
+Print every field of every report as TSV with a header line.
+.TP
+.BR config " \fIkey\fR [\fIvalue\fR]"
+Print or change a setting.
+With
+.BR \-\-list ,
+print every setting that is set.
+.SH OPTIONS
+.SS Global
+.TP
+.BR \-h ", " \-\-help
+Show usage.
+After a subcommand, show the usage of that subcommand.
+.TP
+.B \-\-version
+Show the version.
+.TP
+.BI \-\-env " shell"
+Print shell setup for
+.BR eval .
+.I shell
+is
+.B zsh
+or
+.BR bash .
+For
+.B zsh
+this is the
+.B rt
+alias and completion; for
+.B bash
+it is the alias only.
+.SS Columns
+These select columns for
+.B list
+and
+.BR at ,
+and take values for
+.BR init ,
+.B add
+and
+.BR modify .
+.TP
+.BR \-t ", " \-\-short
+Identifier of the report, also used as the repository name.
+Letters, digits,
+.BR . ,
+.B _
+and
+.B \-
+only.
+.TP
+.BR \-l ", " \-\-title ", " \-\-long
+Title of the report.
+.TP
+.BR \-j ", " \-\-subj ", " \-\-subject
+Subject (course) name.
+.TP
+.BR \-d ", " \-\-in ", " \-\-deadline
+Deadline, written as
+.BR "YYYY\-MM\-DD HH:MM" .
+The time of day is required.
+.TP
+.BR \-s ", " \-\-state
+One of
+.BR draft ,
+.BR submit ,
+.B resub
+or
+.BR ok .
+.TP
+.BR \-p ", " \-\-path
+Directory of the project.
+.TP
+.B \-\-style
+Project style:
+.B typst
+or
+.BR latex .
+.SS Other
+.TP
+.BR \-a ", " \-\-all
+.RB ( sync )
+Act on every report.
+.TP
+.B \-\-list
+.RB ( config )
+Print every setting that is set.
+.SH CONFIGURATION
+.TP
+.B release.title
+File name of the released PDF, without the extension.
+Required by
+.BR init .
+.TP
+.B init.style
+Default style for
+.BR init .
+Defaults to
+.BR typst .
+.TP
+.B github.user
+Owner of the repositories.
+Defaults to the account
+.B gh
+is logged in to.
+.SH FILES
+.TP
+.I ~/.config/reportools/config.ini
+Settings.
+.TP
+.I ~/.local/share/reportools/reports.tsv
+The path list: one line per report, holding the short and the absolute path separated by a tab.
+.TP
+.I .reportools
+Metafile of each project, tracked by git.
+.SH EXIT STATUS
+0 on success, 1 on failure.
+.SH EXAMPLES
+First-time setup:
+.PP
+.nf
+.RS
+reportools config release.title 12345_name
+echo \(aqeval "$(reportools \-\-env zsh)"\(aq >> ~/.zshrc
+.RE
+.fi
+.PP
+Create a report and follow it until it is accepted:
+.PP
+.nf
+.RS
+rt init algo1 \-j Algorithms \-d "2026\-11\-30 23:59"
+cd algo1
+rt modify \-\-state submit
+rt modify \-\-state resub
+rt modify \-\-state submit
+rt modify \-\-state ok
+.RE
+.fi
+.PP
+Continue on another machine:
+.PP
+.nf
+.RS
+rt get algo1
+rt sync algo1
+.RE
+.fi
+.SH SEE ALSO
+.BR git (1),
+.BR gh (1),
+.BR typst (1)

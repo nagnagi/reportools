@@ -1,0 +1,15 @@
+.{
+    .name = .reportools,
+    .version = "0.1.0",
+    .fingerprint = 0xbc5ed104fdd3bc1b,
+    .minimum_zig_version = "0.17.1",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "man",
+        "install.sh",
+        "LICENSE",
+    },
+}
