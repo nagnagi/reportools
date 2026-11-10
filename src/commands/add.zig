@@ -7,6 +7,7 @@ const files = @import("../files.zig");
 const metafile = @import("../metafile.zig");
 const Registry = @import("../registry.zig").Registry;
 const report_mod = @import("../report.zig");
+const tracking = @import("../tracking.zig");
 
 pub const summary = "register an existing report directory";
 pub const usage =
@@ -43,6 +44,7 @@ pub fn run(ctx: *Context, parsed: args.Parsed) !void {
     try registry.register(ctx, .{ .short = report.short, .path = root });
     if (is_new or changed) try metafile.save(ctx, root, report);
     try ctx.out.print("added {s} in {s}\n", .{ report.short, root });
+    try tracking.settle(ctx, root, "Add " ++ metafile.name, .warn);
 }
 
 /// Starts a record for a directory without a metafile; `short` stays empty if the name is unusable.

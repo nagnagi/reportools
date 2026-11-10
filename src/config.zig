@@ -10,6 +10,7 @@ pub const Key = enum {
     release_title,
     init_style,
     github_user,
+    commit_auto,
 
     pub const all = std.enums.values(Key);
 
@@ -19,6 +20,7 @@ pub const Key = enum {
             .release_title => "release.title",
             .init_style => "init.style",
             .github_user => "github.user",
+            .commit_auto => "commit.auto",
         };
     }
 
@@ -36,7 +38,7 @@ pub const Key = enum {
     }
 };
 
-pub const SetError = error{ InvalidTitle, InvalidStyle, InvalidUser };
+pub const SetError = error{ InvalidTitle, InvalidStyle, InvalidUser, InvalidBool };
 
 pub const Config = struct {
     doc: ini.Document = .{},
@@ -66,6 +68,7 @@ pub const Config = struct {
             .release_title => if (!isFileStem(value)) return error.InvalidTitle,
             .init_style => if (std.meta.stringToEnum(Style, value) == null) return error.InvalidStyle,
             .github_user => if (!isFileStem(value)) return error.InvalidUser,
+            .commit_auto => if (parseBool(value) == null) return error.InvalidBool,
         }
         const section, const entry = key.location();
         try self.doc.set(gpa, section, entry, value);
@@ -81,6 +84,11 @@ pub const Config = struct {
         const text = self.get(.init_style) orelse return .typst;
         return std.meta.stringToEnum(Style, text) orelse .typst;
     }
+
+    /// Reports whether commands that rewrite the metafile should commit it.
+    pub fn autoCommit(self: *const Config) bool {
+        return parseBool(self.get(.commit_auto) orelse return false) orelse false;
+    }
 };
 
 /// Explains a `SetError` for the user.
@@ -89,7 +97,15 @@ pub fn explain(err: SetError) []const u8 {
         error.InvalidTitle => "release.title must be a file name without spaces or shell and make metacharacters",
         error.InvalidStyle => "init.style must be one of: typst, latex",
         error.InvalidUser => "github.user must be a GitHub login",
+        error.InvalidBool => "commit.auto must be true or false",
     };
+}
+
+/// Reads `true` or `false`.
+fn parseBool(text: []const u8) ?bool {
+    if (std.mem.eql(u8, text, "true")) return true;
+    if (std.mem.eql(u8, text, "false")) return false;
+    return null;
 }
 
 /// Reports whether `text` can be pasted unquoted into a Makefile recipe and a gitignore pattern.
@@ -116,11 +132,15 @@ test "set validates, and save then load round-trips" {
     try std.testing.expectError(error.InvalidTitle, config.set(fx.ctx.arena, .release_title, "a b"));
     try std.testing.expectError(error.InvalidTitle, config.set(fx.ctx.arena, .release_title, "a/$(b)"));
     try std.testing.expectError(error.InvalidStyle, config.set(fx.ctx.arena, .init_style, "word"));
+    try std.testing.expect(!config.autoCommit());
+    try std.testing.expectError(error.InvalidBool, config.set(fx.ctx.arena, .commit_auto, "yes"));
+    try config.set(fx.ctx.arena, .commit_auto, "true");
     try config.save(&fx.ctx);
 
     const again = try Config.load(&fx.ctx);
     try std.testing.expectEqualStrings("12345_氏名", again.get(.release_title).?);
     try std.testing.expectEqual(Style.latex, again.defaultStyle());
+    try std.testing.expect(again.autoCommit());
 }
 
 test "Key.parse accepts exactly the dotted names" {

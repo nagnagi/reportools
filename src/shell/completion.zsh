@@ -87,7 +87,7 @@ _reportools() {
           ;;
         config)
           _arguments '--help[show usage]' '--list[print every setting]' \
-            '1:key:(release.title init.style github.user)' \
+            '1:key:(release.title init.style github.user commit.auto)' \
             '2:value: '
           ;;
       esac

@@ -89,8 +89,11 @@ Its directory and remote repository are kept.
 .BR modify " [\fIshort\fR] " \-\-\fIcolumn\fR " \fIvalue\fR ..."
 Update fields of a report.
 This rewrites
-.I .reportools
-without committing.
+.IR .reportools ,
+which is committed only if
+.B commit.auto
+is
+.BR true .
 The short cannot be changed.
 .B \-\-path
 updates only the path list, and requires a
@@ -211,6 +214,25 @@ Owner of the repositories.
 Defaults to the account
 .B gh
 is logged in to.
+.TP
+.B commit.auto
+If
+.BR true ,
+every subcommand that rewrites
+.I .reportools
+.RB ( add ,
+.BR modify ,
+.B ok
+and
+.BR get )
+commits that file alone; nothing is pushed.
+Defaults to
+.BR false ,
+in which case
+.B add
+warns when
+.I .reportools
+is not committed.
 .SH FILES
 .TP
 .I ~/.config/reportools/config.ini

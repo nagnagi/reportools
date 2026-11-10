@@ -4,6 +4,7 @@ const Context = @import("../Context.zig");
 const lookup = @import("../lookup.zig");
 const metafile = @import("../metafile.zig");
 const Registry = @import("../registry.zig").Registry;
+const tracking = @import("../tracking.zig");
 
 pub const summary = "mark a report as finished";
 pub const usage =
@@ -19,4 +20,5 @@ pub fn run(ctx: *Context, parsed: args.Parsed) !void {
     var entry = try lookup.resolve(ctx, &registry, try lookup.shortArg(ctx, &parsed));
     entry.report.state = .ok;
     try metafile.save(ctx, entry.path, entry.report);
+    try tracking.settle(ctx, entry.path, "Mark report as ok", .quiet);
 }

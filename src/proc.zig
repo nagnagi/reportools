@@ -29,13 +29,25 @@ pub fn run(ctx: *const Context, cmd: Command) !void {
 
 /// Runs a command and returns its standard output without surrounding whitespace.
 pub fn capture(ctx: *const Context, cmd: Command) ![]const u8 {
-    const result = std.process.run(ctx.arena, ctx.io, .{ .argv = cmd.argv, .cwd = cmd.childCwd() }) catch |e|
-        return spawnFailure(ctx, cmd, e);
+    const result = try collect(ctx, cmd);
     if (!result.term.success()) {
         const reason = std.mem.trim(u8, result.stderr, " \t\r\n");
         return ctx.fail("command failed: {s}\n{s}", .{ try cmd.text(ctx), reason });
     }
     return std.mem.trim(u8, result.stdout, " \t\r\n");
+}
+
+/// Like `capture`, but a non-zero exit yields null instead of an error message.
+pub fn query(ctx: *const Context, cmd: Command) !?[]const u8 {
+    const result = try collect(ctx, cmd);
+    if (!result.term.success()) return null;
+    return std.mem.trim(u8, result.stdout, " \t\r\n");
+}
+
+/// Runs a command to completion with its output captured.
+fn collect(ctx: *const Context, cmd: Command) !std.process.RunResult {
+    return std.process.run(ctx.arena, ctx.io, .{ .argv = cmd.argv, .cwd = cmd.childCwd() }) catch |e|
+        return spawnFailure(ctx, cmd, e);
 }
 
 /// Reports why a program could not be started.
@@ -62,6 +74,9 @@ test "a non-zero exit and a missing program are reported" {
 
     try std.testing.expectError(error.Reported, capture(&fx.ctx, .{ .argv = &.{ "sh", "-c", "echo why >&2; exit 3" } }));
     try std.testing.expect(std.mem.find(u8, try fx.takeErr(), "why") != null);
+    try std.testing.expectEqual(null, try query(&fx.ctx, .{ .argv = &.{ "sh", "-c", "echo out; exit 3" } }));
+    try std.testing.expectEqualStrings("out", (try query(&fx.ctx, .{ .argv = &.{ "sh", "-c", "echo out" } })).?);
+    try std.testing.expectEqualStrings("", try fx.takeErr());
     try std.testing.expectError(error.Reported, run(&fx.ctx, .{ .argv = &.{"reportools-no-such-program"} }));
     try std.testing.expect(std.mem.find(u8, try fx.takeErr(), "command not found") != null);
 }

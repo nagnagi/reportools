@@ -7,6 +7,7 @@ const run = cli.run;
 
 const Fixture = @import("Fixture.zig");
 const files = @import("files.zig");
+const proc = @import("proc.zig");
 
 /// Runs a command line in the fixture and returns its standard output.
 fn exec(fx: *Fixture, argv: []const []const u8) ![]const u8 {
@@ -19,6 +20,24 @@ fn makeProject(fx: *Fixture, name: []const u8) ![]const u8 {
     const root = try fx.ctx.absolute(name);
     try files.makeDir(&fx.ctx, root);
     return root;
+}
+
+/// Creates `<work>/<name>` as a git repository that can commit without global configuration.
+fn makeRepo(fx: *Fixture, name: []const u8) ![]const u8 {
+    const root = try makeProject(fx, name);
+    const setup = [_][]const []const u8{
+        &.{ "git", "init", "--quiet" },
+        &.{ "git", "config", "user.name", "Test" },
+        &.{ "git", "config", "user.email", "test@example.invalid" },
+        &.{ "git", "config", "commit.gpgsign", "false" },
+    };
+    for (setup) |argv| _ = try git(fx, root, argv);
+    return root;
+}
+
+/// Runs a git command line in `root` and returns its output.
+fn git(fx: *Fixture, root: []const u8, argv: []const []const u8) ![]const u8 {
+    return proc.capture(&fx.ctx, .{ .argv = argv, .cwd = root });
 }
 
 test "global options print usage and version" {
@@ -198,6 +217,45 @@ test "add creates a missing metafile, naming the report after its directory unle
     try std.testing.expectEqualStrings("plain", (try metafile.load(&fx.ctx, plain)).short);
     try std.testing.expectEqualStrings("custom", (try metafile.load(&fx.ctx, renamed)).short);
     try std.testing.expectEqualStrings("custom\nplain\n", try exec(fx, &.{ "list", "--short" }));
+}
+
+test "add warns when .reportools is left uncommitted in a repository" {
+    const fx = try Fixture.init();
+    defer fx.deinit();
+    const root = try makeRepo(fx, "repo");
+    _ = try makeProject(fx, "plain");
+
+    _ = try exec(fx, &.{ "add", "plain" });
+    try std.testing.expectEqualStrings("", try fx.takeErr());
+
+    _ = try exec(fx, &.{ "add", "repo" });
+    const warning = try fx.takeErr();
+    const expected = try std.fmt.allocPrint(fx.ctx.arena, ".reportools in {s} is not committed", .{root});
+    try std.testing.expect(std.mem.find(u8, warning, expected) != null);
+    try std.testing.expect(std.mem.find(u8, warning, "reportools config commit.auto true") != null);
+    try std.testing.expectEqualStrings("?? .reportools", try git(fx, root, &.{ "git", "status", "--porcelain" }));
+}
+
+test "commit.auto commits .reportools alone after add, modify and ok" {
+    const fx = try Fixture.init();
+    defer fx.deinit();
+    const root = try makeRepo(fx, "repo");
+    try files.write(&fx.ctx, try std.fs.path.join(fx.ctx.arena, &.{ root, "draft.txt" }), "wip");
+    _ = try git(fx, root, &.{ "git", "add", "draft.txt" });
+    _ = try exec(fx, &.{ "config", "commit.auto", "true" });
+
+    _ = try exec(fx, &.{ "add", "repo" });
+    _ = try exec(fx, &.{ "modify", "repo", "--state", "submit" });
+    _ = try exec(fx, &.{ "ok", "repo" });
+    _ = try exec(fx, &.{ "ok", "repo" });
+
+    try std.testing.expectEqualStrings("", try fx.takeErr());
+    try std.testing.expectEqualStrings(
+        "Mark report as ok\nUpdate report details\nAdd .reportools",
+        try git(fx, root, &.{ "git", "log", "--format=%s" }),
+    );
+    try std.testing.expectEqualStrings(".reportools", try git(fx, root, &.{ "git", "ls-tree", "--name-only", "HEAD" }));
+    try std.testing.expectEqualStrings("A  draft.txt", try git(fx, root, &.{ "git", "status", "--porcelain" }));
 }
 
 test "add reuses an existing metafile and rejects a short registered elsewhere" {

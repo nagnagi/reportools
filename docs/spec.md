@@ -35,6 +35,7 @@ user = nagnagi
 | `release.title` | 提出用 PDF のファイル名。拡張子は付けない。 | `init` がエラー終了する |
 | `init.style` | `init` の既定のスタイル | `typst` |
 | `github.user` | リポジトリの所有者 | `gh api user` で取得する |
+| `commit.auto` | `true` なら、`.reportools` を書き換えるコマンドがそのファイルを自動で commit する | `false` |
 
 ### 2.2 パス一覧
 
@@ -83,24 +84,33 @@ reportools <subcommand> [-<options>] [--<long option>, ...] <arguments>
 | `at [short] [--<列>...]` | 全項目を表示する。列を指定すると、その値だけを出力する。 |
 | `get <short>` | `<user>/<short>` を `./<short>` に clone し、パス一覧に登録する。 |
 | `sync [short]` / `sync --all` | `git pull` の後に `git push` を行う。commit はしない。 |
-| `init <short> [--style <latex\|typst>] [--<列> <値>...]` | プロジェクトを初期化する(4.1)。 |
+| `init <short> [--style <latex\|typst>] [--<列> <値>...]` | プロジェクトを初期化する(4.2)。 |
 | `add [path] [--<列> <値>...]` | 既存のディレクトリをパス一覧に登録する。`.reportools` が無ければ作り、`--short` を省略するとディレクトリ名を `short` にする。 |
 | `remove [short]` | パス一覧から外す。ディレクトリとリモートリポジトリは残す。 |
-| `modify [short] --<列> <値>...` | 項目を更新する。commit はしない。 |
+| `modify [short] --<列> <値>...` | 項目を更新する。 |
 | `ok [short]` | レポートを完了にする。`modify [short] --state ok` と同じ。 |
 | `export` | 全レポートの全項目を、見出し付きの TSV で標準出力に出す。 |
 | `config <key> [value]` / `config --list` | 設定を取得、設定、一覧表示する。 |
 
 `modify` では `short` を変更できない。`--path` はパス一覧だけを更新する。
 
-### 4.1 init
+### 4.1 `.reportools` の commit
+
+`add`、`modify`、`ok`、および `get`(clone したリポジトリに `.reportools` が無く、新規に作った場合)は `.reportools` を書き換える。その後の扱いは `commit.auto` で決まる。
+
+- `true`: `.reportools` だけを commit する。ほかの変更は commit せず、push もしない。
+- `false`(既定): commit しない。`add` と `get` は、`.reportools` が未 commit であることを警告する。
+
+プロジェクトのディレクトリが git の作業ツリーの最上位でない場合は、commit も警告もしない。
+
+### 4.2 init
 
 1. `release.title` が未設定なら、設定方法を表示してエラー終了する。この時点では何も作らない。
 2. `./<short>` を作り、5章の構成を生成する。
 3. `git init`、全ファイルの commit を行い、パス一覧に登録する。
 4. `gh` で `<user>/<short>` を private で作り、push する。
 
-### 4.2 共通オプション
+### 4.3 共通オプション
 
 | オプション | 動作 |
 |---|---|

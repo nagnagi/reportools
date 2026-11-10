@@ -7,6 +7,7 @@ const github = @import("../github.zig");
 const metafile = @import("../metafile.zig");
 const Registry = @import("../registry.zig").Registry;
 const report_mod = @import("../report.zig");
+const tracking = @import("../tracking.zig");
 
 pub const summary = "clone an existing report repository and register it";
 pub const usage =
@@ -45,7 +46,7 @@ fn loadOrCreate(ctx: *Context, root: []const u8, fallback: report_mod.Report) !r
     return metafile.load(ctx, root) catch |e| switch (e) {
         error.MetafileNotFound => {
             try metafile.save(ctx, root, fallback);
-            ctx.warn("the repository had no {s}; created one, commit it to keep it", .{metafile.name});
+            try tracking.settle(ctx, root, "Add " ++ metafile.name, .warn);
             return fallback;
         },
         else => return e,

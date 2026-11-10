@@ -13,6 +13,8 @@ pub const usage =
     \\  release.title   file name of the released PDF, without ".pdf" (required by init)
     \\  init.style      default project style: typst or latex
     \\  github.user     repository owner (default: the account gh is logged in to)
+    \\  commit.auto     true to commit .reportools whenever reportools rewrites it
+    \\                  (default: false)
 ;
 pub const spec: args.Spec = .{ .flags = &.{.list} };
 
@@ -26,7 +28,7 @@ pub fn run(ctx: *Context, parsed: args.Parsed) !void {
     }
     if (words.len == 0 or words.len > 2) return ctx.fail("expected <key> [value]; see `reportools config --help`", .{});
     const key = config_mod.Key.parse(words[0]) orelse
-        return ctx.fail("{s}: unknown key (release.title, init.style, github.user)", .{words[0]});
+        return ctx.fail("{s}: unknown key; see `reportools config --help`", .{words[0]});
 
     if (words.len == 1) {
         const value = config.get(key) orelse return ctx.fail("{s} is not set", .{key.name()});
