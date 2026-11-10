@@ -2,7 +2,7 @@
 
 const std = @import("std");
 const Io = std.Io;
-const Context = @import("Context.zig");
+const Context = @import("../Context.zig");
 
 const Fixture = @This();
 

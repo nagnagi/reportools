@@ -2,12 +2,12 @@
 
 const std = @import("std");
 const build_options = @import("build_options");
-const cli = @import("cli.zig");
+const cli = @import("../cli.zig");
 const run = cli.run;
 
 const Fixture = @import("Fixture.zig");
-const files = @import("files.zig");
-const proc = @import("proc.zig");
+const files = @import("../files.zig");
+const proc = @import("../proc.zig");
 
 /// Runs a command line in the fixture and returns its standard output.
 fn exec(fx: *Fixture, argv: []const []const u8) ![]const u8 {
@@ -208,7 +208,7 @@ test "add creates a missing metafile, naming the report after its directory unle
     defer fx.deinit();
     const plain = try makeProject(fx, "plain");
     const renamed = try makeProject(fx, "renamed");
-    const metafile = @import("metafile.zig");
+    const metafile = @import("../metafile.zig");
 
     try std.testing.expectError(error.MetafileNotFound, metafile.load(&fx.ctx, plain));
     _ = try exec(fx, &.{ "add", "plain" });

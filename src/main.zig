@@ -40,16 +40,16 @@ fn start(init: std.process.Init, out: *Io.Writer, err: *Io.Writer) !void {
 }
 
 test {
-    _ = @import("cli_test.zig");
-    _ = @import("args.zig");
-    _ = @import("config.zig");
-    _ = @import("deadline.zig");
-    _ = @import("files.zig");
-    _ = @import("ini.zig");
-    _ = @import("metafile.zig");
-    _ = @import("proc.zig");
-    _ = @import("registry.zig");
-    _ = @import("report.zig");
-    _ = @import("scaffold.zig");
-    _ = @import("table.zig");
+    _ = @import("test/args_test.zig");
+    _ = @import("test/cli_test.zig");
+    _ = @import("test/config_test.zig");
+    _ = @import("test/deadline_test.zig");
+    _ = @import("test/files_test.zig");
+    _ = @import("test/ini_test.zig");
+    _ = @import("test/metafile_test.zig");
+    _ = @import("test/proc_test.zig");
+    _ = @import("test/registry_test.zig");
+    _ = @import("test/report_test.zig");
+    _ = @import("test/scaffold_test.zig");
+    _ = @import("test/table_test.zig");
 }
